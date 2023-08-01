@@ -16,10 +16,10 @@ To use this Go File Browser API, you need to provide two command-line arguments 
 
 ## Download Binaries
 - You can download binaries from releases page.
+
 ```bash
 curl -LJO https://github.com/shakg/file-browser-api/releases/download/v1.0.0/file-browser-api
 ```
-
 ## Endpoints
 
 ### 1. `/folder-metadata`
