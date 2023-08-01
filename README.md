@@ -14,13 +14,20 @@ To use this Go File Browser API, you need to provide two command-line arguments 
 
 - `<PORT>`: The port number on which the server will run.
 
-## Download Binaries
+## Downloadables
 
 > You can download binaries from releases page. Or with curl but you need to take a look at the latest release name and replace 'v1.0.0' with release you want to download.
 
 ```bash
 curl -LJO https://github.com/shakg/file-browser-api/releases/download/v1.0.0/file-browser-api
 ```
+
+> You can download service file with curl or in Github UI.
+
+```bash
+curl -LJO https://raw.githubusercontent.com/shakg/file-browser-api/main/file-browser-api.service
+```
+
 ## Endpoints
 
 ### 1. `/folder-metadata`
