@@ -1,0 +1,12 @@
+[Unit]
+Description=File Browser API Service
+After=network.target
+
+[Service]
+User=your_username
+WorkingDirectory=/path/to/your/file-browser-api
+ExecStart=/path/to/your/file-browser-api/file-browser-api /path/to/folder PORT
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
