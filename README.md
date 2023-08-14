@@ -46,6 +46,45 @@ The response will be a JSON array containing metadata for the files and subfolde
 - `isDirectory` (bool): A boolean value indicating whether the item is a directory (true) or a file (false).
 - `lastModified` (string): The last modification time of the file or folder in ISO 8601 format.
 
+### Example Response
+```json
+{
+  "name": "root",
+  "isDirectory": true,
+  "children": [
+    {
+      "name": "folder1",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "file1.txt",
+          "size": 1024,
+          "isDirectory": false,
+          "lastModified": "2023-08-14T12:00:00Z"
+        },
+        {
+          "name": "subfolder1",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "file2.txt",
+              "size": 2048,
+              "isDirectory": false,
+              "lastModified": "2023-08-14T14:30:00Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "folder2",
+      "isDirectory": true,
+      "children": []
+    }
+  ]
+}
+
+```
 ### 2. `/file-content`
 
 **Method:** GET
