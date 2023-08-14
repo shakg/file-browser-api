@@ -63,12 +63,15 @@ The response will be the content of the file with the appropriate `Content-Dispo
 The `FileMetadata` struct is used to represent the metadata for a file or folder. It has the following properties:
 
 ```go
+
 type FileMetadata struct {
-	Name         string    `json:"name"`
-	Size         int64     `json:"size"`
-	IsDirectory  bool      `json:"isDirectory"`
-	LastModified time.Time `json:"lastModified"`
+	Name         string        `json:"name"`
+	Size         int64         `json:"size"`
+	IsDirectory  bool          `json:"isDirectory"`
+	LastModified time.Time     `json:"lastModified"`
+	Children     []FileMetadata `json:"children,omitempty"` 
 }
+
 ```
 
 - `Name` (string): The name of the file or folder.

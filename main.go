@@ -19,7 +19,7 @@ func getFolderMetadataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get folder metadata
-	metadata, err := getFolderMetadata(folderPath)
+	metadata, err := walkFolders(folderPath)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get folder metadata: %s", err), http.StatusInternalServerError)
 		return
@@ -58,39 +58,37 @@ func getFileContentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type FileMetadata struct {
-	Name         string    `json:"name"`
-	Size         int64     `json:"size"`
-	IsDirectory  bool      `json:"isDirectory"`
-	LastModified time.Time `json:"lastModified"`
+	Name         string        `json:"name"`
+	Size         int64         `json:"size"`
+	IsDirectory  bool          `json:"isDirectory"`
+	LastModified time.Time     `json:"lastModified"`
+	Children     []FileMetadata `json:"children,omitempty"` 
 }
 
-func getFolderMetadata(folderPath string) ([]FileMetadata, error) {
-	var metadata []FileMetadata
-
-	// Walk through the folder and its subdirectories
-	err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
+func walkFolders(path string)(FileMetadata, error){
+	node := FileMetadata{}
+	info, err := os.Stat(path)
+	if err != nil {
+		return node, err
+	}
+	node.Name = info.Name()
+	node.IsDirectory = info.IsDir()
+	node.Size = info.Size()
+	node.LastModified = info.ModTime()
+	if node.IsDirectory {
+		files, err := os.ReadDir(path)
 		if err != nil {
-			return err
+			return node, err
 		}
-
-		// Skip the root folder itself
-		if path == folderPath {
-			return nil
+		for _, file := range files {
+			child, err := walkFolders(filepath.Join(path, file.Name()))
+			if err != nil {
+				return node, err
+			}
+			node.Children = append(node.Children, child)
 		}
-
-		// Collect file/folder metadata
-		fileMeta := FileMetadata{
-			Name:         info.Name(),
-			Size:         info.Size(),
-			IsDirectory:  info.IsDir(),
-			LastModified: info.ModTime(),
-		}
-		metadata = append(metadata, fileMeta)
-
-		return nil
-	})
-
-	return metadata, err
+	}
+	return node, nil
 }
 
 func getFileContent(fileName string) ([]byte, error) {
