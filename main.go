@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
-	"encoding/json"
 )
 
 func getFolderMetadataHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +50,14 @@ func getFileContentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get file size
+	fileSize, err := getFileSize(filepath.Join(folderPath, fileName))
+
+	// Set the Content-Length header only if we could read the fileSize successfully
+	if err == nil {
+		w.Header().Set("Content-Length", strconv.FormatInt(fileSize, 10))
+	}
+
 	// Respond with file content as octet/stream
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filepath.Base(fileName)))
 	w.Header().Set("Content-Type", "application/octet-stream")
@@ -58,14 +67,14 @@ func getFileContentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type FileMetadata struct {
-	Name         string        `json:"name"`
-	Size         int64         `json:"size"`
-	IsDirectory  bool          `json:"isDirectory"`
-	LastModified time.Time     `json:"lastModified"`
-	Children     []FileMetadata `json:"children,omitempty"` 
+	Name         string         `json:"name"`
+	Size         int64          `json:"size"`
+	IsDirectory  bool           `json:"isDirectory"`
+	LastModified time.Time      `json:"lastModified"`
+	Children     []FileMetadata `json:"children,omitempty"`
 }
 
-func walkFolders(path string)(FileMetadata, error){
+func walkFolders(path string) (FileMetadata, error) {
 	node := FileMetadata{}
 	info, err := os.Stat(path)
 	if err != nil {
@@ -95,20 +104,28 @@ func getFileContent(fileName string) ([]byte, error) {
 	return os.ReadFile(fileName)
 }
 
-func main() {
-		if len(os.Args) < 3 {
-			fmt.Println("Usage: ./filebrowser <folderPath> <PORT>")
-			os.Exit(1)
-		}
-	
-		port := os.Args[2]
-	
-		http.HandleFunc("/folder-metadata", getFolderMetadataHandler)
-		http.HandleFunc("/file-content", getFileContentHandler)
-		log.Printf("Server is running on http://localhost:%s", port)
-		log.Fatal(http.ListenAndServe(":"+port, nil))
+func getFileSize(fileName string) (int64, error) {
+	info, err := os.Stat(fileName)
+	if err != nil {
+		return 0, err
 	}
-	
+	return info.Size(), nil
+}
+
+func main() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: ./filebrowser <folderPath> <PORT>")
+		os.Exit(1)
+	}
+
+	port := os.Args[2]
+
+	http.HandleFunc("/folder-metadata", getFolderMetadataHandler)
+	http.HandleFunc("/file-content", getFileContentHandler)
+	log.Printf("Server is running on http://localhost:%s", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
 func getFolderPathFromArgs() string {
 	if len(os.Args) >= 2 {
 		return os.Args[1]
