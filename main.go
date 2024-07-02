@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -47,6 +48,14 @@ func getFileContentHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to read file content: %s", err), http.StatusInternalServerError)
 		return
+	}
+
+	// Get file size
+	fileSize, err := getFileSize(filepath.Join(folderPath, fileName))
+
+	// Set the Content-Length header only if we could read the fileSize successfully
+	if err == nil {
+		w.Header().Set("Content-Length", strconv.FormatInt(fileSize, 10))
 	}
 
 	// Respond with file content as octet/stream
@@ -93,6 +102,14 @@ func walkFolders(path string) (FileMetadata, error) {
 
 func getFileContent(fileName string) ([]byte, error) {
 	return os.ReadFile(fileName)
+}
+
+func getFileSize(fileName string) (int64, error) {
+	info, err := os.Stat(fileName)
+	if err != nil {
+		return 0, err
+	}
+	return info.Size(), nil
 }
 
 func main() {
